@@ -14,7 +14,7 @@ None
 | `monit_group` | group of `monit` | `{{ __monit_group }}` |
 | `monit_service` | service name of `monit` | `monit` |
 | `monit_conf_dir` | directory name where `monitrc` is | `{{ __monit_conf_dir }}` |
-| `monit_conf_file` | path to `monitrc` | `{{ __monit_conf_dir }}/monitrc` |
+| `monit_conf_file` | path to `monitrc` | `{{ monit_conf_dir }}/monitrc` |
 | `monit_conf_include_dir` | path to directory where all monit configuration fragments are | `{{ __monit_conf_include_dir }}` |
 | `monit_flags` | not used at the moment | `""` |
 | `monit_scripts` | extra scripts in the role to be installed (optional) | `[]` |
