@@ -4,20 +4,11 @@ monit_service: monit
 monit_conf_dir: "{{ __monit_conf_dir }}"
 monit_conf_file: "{{ monit_conf_dir }}/monitrc"
 monit_conf_include_dir: "{{ __monit_conf_include_dir }}"
+monit_conf_extra_include_directories: []
 monit_flags: ""
 
 monit_scripts: []
 monit_script_path: "{{ __monit_script_path }}"
 
-monit_conf_daemon: 10
-monit_conf_start_delay: 180
-
-monit_conf_httpd_enable: True
-monit_conf_httpd_address: 127.0.0.1
-monit_conf_httpd_port: 2812
-monit_conf_httpd_allow:
-  - 127.0.0.1
-
-monit_conf_logfile_syslog_facility: log_daemon
-
 monit_rc: {}
+monit_config: ""

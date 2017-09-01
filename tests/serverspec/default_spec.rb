@@ -9,6 +9,9 @@ ports = [2812]
 script_path = "/usr/sbin"
 scripts = %w(isakmpd_start)
 ssh_rc_command = "/etc/init.d/ssh"
+default_user = "root"
+default_group = "root"
+extra_include_dir = "/usr/local/project/config/monit"
 
 case os[:family]
 when "freebsd"
@@ -16,9 +19,11 @@ when "freebsd"
   config_dir = "/usr/local/etc/monit.d"
   script_path = "/usr/local/sbin"
   ssh_rc_command = "/etc/rc.d/sshd"
+  default_group = "wheel"
 when "openbsd"
   script_path = "/usr/local/sbin"
   ssh_rc_command = "/etc/rc.d/sshd"
+  default_group = "wheel"
 when "ubuntu"
   config = "/etc/monit/monitrc"
   config_dir = "/etc/monit/monitrc.d"
@@ -29,11 +34,14 @@ describe package(package) do
 end
 
 describe file(config) do
+  it { should exist }
   it { should be_file }
+  it { should be_mode 600 }
   its(:content) { should match(/^set daemon \d+\n\s+with start delay \d+/) }
   its(:content) { should match(/^set httpd port 2812\n\s+use address #{ Regexp.escape('127.0.0.1') }\n\s+allow\s+#{ Regexp.escape('127.0.0.1') }/) }
   its(:content) { should match(/^set logfile syslog facility log_daemon/) }
-  its(:content) { should match(/^include #{ Regexp.escape(config_dir + '/*') }/) }
+  its(:content) { should match(/^include #{ Regexp.escape(config_dir + '/*.monitrc') }/) }
+  its(:content) { should match(/^include #{ Regexp.escape(extra_include_dir + '/*.monitrc') }/) }
 end
 
 # case os[:family]
@@ -48,10 +56,25 @@ describe service(service) do
   it { should be_enabled }
 end
 
+describe file(config_dir) do
+  it { should exist }
+  it { should be_directory }
+  it { should be_owned_by default_user }
+  it { should be_grouped_into default_group }
+  it { should be_mode 755 }
+end
+
 describe file("#{config_dir}/sshd.monitrc") do
+  it { should exist }
   it { should be_file }
   it { should be_mode 600 }
-  its(:content) { should match(/#{ Regexp.escape('start program "' + ssh_rc_command + ' start"') }/) }
+  it { should be_owned_by default_user }
+  it { should be_grouped_into default_group }
+  if os[:family] == "redhat"
+    its(:content) { should match(/^\s+start program "#{Regexp.escape('/bin/systemctl')} start sshd"$/) }
+  else
+    its(:content) { should match(/#{ Regexp.escape('start program "' + ssh_rc_command + ' start"') }/) }
+  end
 end
 
 ports.each do |p|
@@ -62,6 +85,7 @@ end
 
 scripts.each do |file|
   describe file("#{script_path}/#{file}") do
+    it { should exist }
     it { should be_file }
     it { should be_mode 755 }
   end
